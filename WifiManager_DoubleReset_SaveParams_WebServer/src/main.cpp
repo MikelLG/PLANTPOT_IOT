@@ -1,499 +1,202 @@
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//  
-//    This code is an example of how to use an ESP32 to connect to a Wifi without hard coding the WiFi credentials.
-//    If the ESP32 doesn't have a connection saved into its file and can't connect to internet, it will start an AP Access Point.
-//    Once the ESP32 has connection to a network it will then try to connect to the MQTT Broser to send the data of the sensors.
-//    If you press twice the ResetButton of the ESP32, it will reset the Wifi Connection and launch again the AP Access Point to input the credentials.
-//
-//    Modified my Mikel LLobera Guelbenzu on 16/11/22. (mikelguelbenzu@gmail.com)
-//
-//    Works with ESP32
-//
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*********
+  Rui Santos
+  Complete project details at https://randomnerdtutorials.com  
+*********/
 
-
-#include <Arduino.h>
-
-#include <FS.h>                   //this needs to be first, or it all crashes and burns...
-
-// Libraries 
-#include <DHT.h>
-
-#include <DNSServer.h>
-
-// SPI Flash Syetem Library
-#include <SPIFFS.h>
-
-// Librerias necesarias para Hacer del ESP un WebServer.
+// Load Wi-Fi library
 #include <WiFi.h>
-#include <WebServer.h>
 
-// Library for using the WifiManager -- This allows you to not hardcode the Wifi Credentials!
-//#include <ESP_WifiManager.h>
-#include <WiFiManager.h>
+int BUILTIN_LED = 13;   // I'm using the Builtin LED to show when it is connected with AP Access Point
 
-#include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
+// Replace with your network credentials
+const char* ssid     = "ESP32-Access-Point";
+const char* password = "123456789";
 
-/////////////////////////------------------------------------------DOUBLE RESET DETECTION vv---------------------------
-// These defines must be put before #include <ESP_DoubleResetDetector.h>
-// to select where to store DoubleResetDetector's variable.
-// For ESP32, You must select one to be true (EEPROM or SPIFFS)
-// For ESP8266, You must select one to be true (RTC, EEPROM or SPIFFS)
-// Otherwise, library will use default EEPROM storage
-#define ESP_DRD_USE_EEPROM      false
-#define ESP_DRD_USE_SPIFFS      true    //false
+// Set web server port number to 80
+WiFiServer server(80);
 
-#ifdef ESP8266
-  #define ESP8266_DRD_USE_RTC     false   //true
-#endif
+// Variable to store the HTTP request
+String header;
 
-#define DOUBLERESETDETECTOR_DEBUG       true  //false
+// Auxiliar variables to store the current output state
+String output26State = "off";
+String output27State = "off";
+String output13State = "off";
 
-#include <ESP_DoubleResetDetector.h>      //https://github.com/khoih-prog/ESP_DoubleResetDetector
+// Assign output variables to GPIO pins
+const int output26 = 26;
+const int output27 = 27;
+const int output13 = 13;
 
-// Number of seconds after reset during which a
-// subseqent reset will be considered a double reset.
-#define DRD_TIMEOUT 10
-
-// RTC Memory Address for the DoubleResetDetector to use
-#define DRD_ADDRESS 0
-
-DoubleResetDetector* drd;
-
-
-/////////////////////////------------------------------------------DOUBLE RESET DETECTION ^^---------------------------
-
-
-
-#include <PubSubClient.h>   //MQTT COMUNICATION
-
-
-#define LED_BUILTIN 2
-
-
-//define your default values here, if there are different values in config.json, they are overwritten.
-/*char ssid_id[40] = "";
-char ssid_psw[40] = "";*/
-char static_ip[40] = "192.168.1.200";
-char static_gateway[40] = "192.168.1.1";
-char subnet[40] = "255.255.255.0";
-
-char mqtt_server[40] = "192.168.1.42";
-char mqtt_port[6] = "1883";
-char blynk_token[34] = "YOUR_BLYNK_TOKEN";
-
-//flag for saving data
-bool shouldSaveConfig = false;
-
-//callback notifying us of the need to save config
-void saveConfigCallback () {
-  Serial.println("Should save config");
-  shouldSaveConfig = true;
-}
-// Variables to hold data from custom textboxes
-char testString[50] = "test value";
-int testNumber = 1234;
-
-
-String temp_str; //see last code block below use these to convert the float that you get back from DHT to a string =str
-String hum_str;   
-char temp[50];
-char hum[50];
-
-
-// Constants
-#define DHTPIN 5     // what pin we're connected to
-#define DHTTYPE DHT22   // DHT 22  (AM2302)
-
-// MQTT COMMNICATION
-WiFiClient espClient;     //What exactly this does? *****************
-PubSubClient client(espClient);
-long lastMsg = 0;
-char msg[50];
-int value = 0;
-
-DHT dht(DHTPIN, DHTTYPE); //// Initialize DHT sensor for normal 16mhz Arduino
-
-//Variables
-int chk;
-//float hum;  //Stores humidity value
-//float temp; //Stores temperature value
-
-void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]); 
-  }
-  Serial.println();
-
-  // Switch on the LED if an 1 was received as first character
-  if ((char)payload[0] == '1') {
-    digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on (Note that LOW is the voltage level
-    // but actually the LED is on; this is because
-    // it is active low on the ESP-01)
-  } else {
-    digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
-  }
-
-}
-
-void reconnect() {
-  // Loop until we're reconnected
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Create a random client ID
-    String clientId = "ESP8266Client-SoilSensor";
-    //clientId += String(random(0xffff), HEX);
-    // Attempt to connect
-    if (client.connect(clientId.c_str())) {
-      Serial.println("connected");
-      // Once connected, publish an announcement...
-      //client.publish("outTopic", "hello world");
-      client.publish("dht22/temperature", "Enviando el primer mensaje");
-      // ... and resubscribe
-      //client.subscribe("inTopic");
-      client.subscribe("system/light");
-      
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
-  }
-}
+int configMode = 0;
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(115200);
-  Serial.println("Booting..");
-
+  pinMode(BUILTIN_LED,OUTPUT);
   
-  drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
+  Serial.write("Led its been switched on");
 
+  // Initialize the output variables as outputs
+  pinMode(output26, OUTPUT);
+  pinMode(output27, OUTPUT);
+  // Set outputs to LOW
+  digitalWrite(output26, LOW);
+  digitalWrite(output27, LOW);
+  digitalWrite(output13, LOW);
+
+  // Connect to Wi-Fi network with SSID and password
+  Serial.print("Setting AP (Access Point)…");
+  // Remove the password parameter, if you want the AP (Access Point) to be open
+  WiFi.softAP(ssid, password);
+
+  IPAddress IP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(IP);
   
+  server.begin();
+}
+
+void loop(){
+  WiFiClient client = server.available();   // Listen for incoming clients
+
+  if (client) {                             // If a new client connects,
+    Serial.println("New Client.");          // print a message out in the serial port
+    String currentLine = "";                // make a String to hold incoming data from the client
+    while (client.connected()) {            // loop while the client's connected
+      if (client.available()) {             // if there's bytes to read from the client,
+        char c = client.read();             // read a byte, then
+        Serial.write(c);                    // print it out the serial monitor
+        header += c;
+        if (c == '\n') {                    // if the byte is a newline character
+          // if the current line is blank, you got two newline characters in a row.
+          // that's the end of the client HTTP request, so send a response:
+          if (currentLine.length() == 0) {
+            // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
+            // and a content-type so the client knows what's coming, then a blank line:
+            
+            
+            // turns the GPIOs on and off
+            if (header.indexOf("GET /26/on") >= 0) {
+              Serial.println("GPIO 26 on");
+              output26State = "on";
+              digitalWrite(output26, HIGH);
+            } else if (header.indexOf("GET /26/off") >= 0) {
+              Serial.println("GPIO 26 off");
+              output26State = "off";
+              digitalWrite(output26, LOW);
+            } else if (header.indexOf("GET /27/on") >= 0) {
+              Serial.println("GPIO 27 on");
+              output27State = "on";
+              digitalWrite(output27, HIGH);
+            } else if (header.indexOf("GET /27/off") >= 0) {
+              Serial.println("GPIO 27 off");
+              output27State = "off";
+              digitalWrite(output27, LOW);
+            } else if(header.indexOf("GET /13/on") >= 0) {
+              Serial.println("GPIO 13 on");
+              output13State = "on";
+              digitalWrite(output13, HIGH);
+            } else if (header.indexOf("GET /13/off") >= 0) {
+              Serial.println("GPIO 13 off");
+              output13State = "off";
+              digitalWrite(output13, LOW);
+            } else if (header.indexOf("GET /configMode") >= 0) {
+              Serial.println("ConfigMode");
+              configMode = 1;
+              Serial.println("Config Mode =" + configMode);
+              //digitalWrite(output13, LOW);
+            } else if (header.indexOf("GET /configModeOK") >= 0) {
+              Serial.println("Exit ConfigMode");
+              configMode = 0;
+              //currentLine = "";
+              Serial.print("Config Mode =" + configMode);
+            }
+            
 
 
+            if (configMode == 0){
+            client.println("HTTP/1.1 200 OK");
+            client.println("Content-type:text/html");
+            client.println("Connection: close");
+            client.println();
 
+              // Display the HTML web page
+            client.println("<!DOCTYPE html><html>");
+            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+            client.println("<link rel=\"icon\" href=\"data:,\">");
+            // CSS to style the on/off buttons 
+            // Feel free to change the background-color and font-size attributes to fit your preferences
+            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
+            client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
+            client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
+            client.println(".button2 {background-color: #555555;}</style></head>");
+            
+            // Web Page Heading
+            client.println("<body><h1>ESP32 Web Server</h1>");
+            
+            // Display current state, and ON/OFF buttons for GPIO 26  
+            client.println("<p>GPIO 26 - State " + output26State + "</p>");
+            // If the output26State is off, it displays the ON button       
+            if (output26State=="off") {
+              client.println("<p><a href=\"/26/on\"><button class=\"button\">ON</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/26/off\"><button class=\"button button2\">OFF</button></a></p>");
+            } 
+               
+            // Display current state, and ON/OFF buttons for GPIO 27  
+            client.println("<p>GPIO 27 - State " + output27State + "</p>");
+            // If the output27State is off, it displays the ON button       
+            if (output27State=="off") {
+              client.println("<p><a href=\"/27/on\"><button class=\"button\">ON</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/27/off\"><button class=\"button button2\">OFF</button></a></p>");
+            }
 
-  client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);
+            // Display current state, and ON/OFF buttons for GPIO 13  
+            client.println("<p>GPIO 13 - State " + output13State + "</p>");
+            // If the output26State is off, it displays the ON button       
+            if (output13State=="off") {
+              client.println("<p><a href=\"/13/on\"><button class=\"button\">ON</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/13/off\"><button class=\"button button2\">OFF</button></a></p>");
+            } 
+            client.println("</body></html>");
+            
+            // The HTTP response ends with another blank line
+            client.println();
+            // Break out of the while loop
+            break;
+            }
+            else if (configMode == 1) {
 
-  dht.begin();
+            client.println("HTTP/1.1 200 OK");
+            client.println("Content-type:text/html");
+            client.println("Connection: close");
+            client.println();
 
-  //_________--------------------------------COPY ---------------
-  Serial.println();
-
-  //clean FS, for testing
-  //SPIFFS.format();
-
-
-  //read configuration from FS json
-  Serial.println("mounting FS...");
-
-  if (SPIFFS.begin()) {
-    Serial.println("mounted file system");
-    if (SPIFFS.exists("/config.json")) {
-      //file exists, reading and loading
-      Serial.println("reading config file");
-      File configFile = SPIFFS.open("/config.json", "r");
-      if (configFile) {
-        Serial.println("opened config file");
-        size_t size = configFile.size();
-        // Allocate a buffer to store contents of the file.
-        std::unique_ptr<char[]> buf(new char[size]);
-
-        configFile.readBytes(buf.get(), size);
-        DynamicJsonDocument jsonBuffer(1024);
-        DeserializationError error = deserializeJson(jsonBuffer,buf.get());
-        //JsonObject& json = jsonBuffer.parseObject(buf.get());
-        //jsonBuffer.printTo(Serial);
-
-        if (!error) {
-          Serial.println("\nparsed json");
-          
-          /*strcpy(ssid_id, jsonBuffer["ssid_id"]);
-          strcpy(ssid_psw, jsonBuffer["ssid_psw"]);*/
-          strcpy(static_ip, jsonBuffer["static_ip"]);
-          strcpy(static_gateway, jsonBuffer["static_gateway"]);
-          strcpy(subnet, jsonBuffer["subnet"]);
-
-
-          strcpy(mqtt_server, jsonBuffer["mqtt_server"]);
-          strcpy(mqtt_port, jsonBuffer["mqtt_port"]);
-          strcpy(blynk_token, jsonBuffer["blynk_token"]);
-
-        } else {
-          Serial.println("failed to load json config");
+            client.println("Wellcome to Config Mode");
+            client.println("</body></html>");
+            
+            // The HTTP response ends with another blank line
+            client.println();
+            // Break out of the while loop
+            break;
+            }
+            
+          } else { // if you got a newline, then clear currentLine
+            currentLine = "";
+          }
+        } else if (c != '\r') {  // if you got anything else but a carriage return character,
+          currentLine += c;      // add it to the end of the currentLine
         }
-        configFile.close();
       }
     }
+    // Clear the header variable
+    header = "";
+    // Close the connection
+    client.stop();
+    Serial.println("Client disconnected.");
+    Serial.println("");
   }
-  else {
-    Serial.println("failed to mount FS");
-  }
-  //end read
-  //_________--------------------------------COPY ---------------
-
-
-
-    // The extra parameters to be configured (can be either global or just in the setup)
-    // After connecting, parameter.getValue() will get you the configured value
-    // id/name placeholder/prompt default length
-    /*
-    WiFiManagerParameter custom_ssid_id("ssid", "ssid id", ssid_id, 40);
-    WiFiManagerParameter custom_ssid_psw("psw", "ssid psw", ssid_psw, 40);*/
-    WiFiManagerParameter custom_static_ip("ip", "static ip", static_ip, 40);
-    WiFiManagerParameter custom_static_gateway("gate", "static gateway", static_gateway, 40);
-    WiFiManagerParameter custom_subnet("subnet", "subnet ip", subnet, 40);
-    
-    WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
-    WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
-    WiFiManagerParameter custom_blynk_token("blynk", "blynk token", blynk_token, 32);
-
-    //WiFiManager
-    //Local intialization. Once its business is done, there is no need to keep it around
-    WiFiManager wifiManager;
-
-    //set config save notify callback
-    wifiManager.setSaveConfigCallback(saveConfigCallback);
-
-    //set static ip
-    wifiManager.setSTAStaticIPConfig(IPAddress(192,168,1,200), IPAddress(192,168,1,1), IPAddress(255,255,255,0));
-    
-    //add all your parameters here
-
-
-
-
-/*
-    wifiManager.addParameter(&custom_ssid_id);
-    wifiManager.addParameter(&custom_ssid_psw);*/
-    wifiManager.addParameter(&custom_static_ip);
-    wifiManager.addParameter(&custom_static_gateway);
-    wifiManager.addParameter(&custom_subnet);
-    
-    wifiManager.addParameter(&custom_mqtt_server);
-    wifiManager.addParameter(&custom_mqtt_port);
-    wifiManager.addParameter(&custom_blynk_token);
-
-    //reset settings - for testing
-    //wifiManager.resetSettings();
-
-    //set minimu quality of signal so it ignores AP's under that quality
-    //defaults to 8%
-    //wifiManager.setMinimumSignalQuality();
-    
-    //sets timeout until configuration portal gets turned off
-    //useful to make it all retry or go to sleep
-    //in seconds
-    //wifiManager.setTimeout(120);
-
-    //fetches ssid and pass and tries to connect
-    //if it does not connect it starts an access point with the specified name
-    //here  "AutoConnectAP"
-    //and goes into a blocking loop awaiting configuration
-    if (!wifiManager.autoConnect("AutoConnectAP", "password")) {
-      Serial.println("failed to connect and hit timeout");
-      delay(3000);
-      //reset and try again, or maybe put it to deep sleep
-      ESP.restart();
-      delay(5000);
-    }
-
-    //if you get here you have connected to the WiFi
-    
-    Serial.println("connected...yeey :)");
-
-    if (drd->detectDoubleReset())
-    {
-      Serial.println("Double Reset Detected");
-      digitalWrite(LED_BUILTIN, LOW);
-      wifiManager.resetSettings();
-    }
-    else
-    {
-      Serial.println("No Double Reset Detected");
-      digitalWrite(LED_BUILTIN, HIGH);
-    }
-
-
-
-/*
-    if (drd.detectDoubleReset()) {
-      Serial.println("Double Reset Detected");
-      
-      //reset settings - for testing
-      wifiManager.resetSettings();
-      
-      //digitalWrite(LED_BUILTIN, LOW);
-    }
-    else {
-      Serial.println("No Double Reset Detected");
-      //digitalWrite(LED_BUILTIN, HIGH);
-      //wifiManager.resetSettings();
-    }*/
-
-    //read updated parameters
-
-/*
-    strcpy(ssid_id, custom_ssid_id.getValue());
-    strcpy(ssid_psw, custom_ssid_psw.getValue());*/
-    strcpy(static_ip, custom_static_ip.getValue());
-    strcpy(static_gateway, custom_static_gateway.getValue());
-    strcpy(subnet, custom_subnet.getValue());
-
-    
-    strcpy(mqtt_server, custom_mqtt_server.getValue());
-    strcpy(mqtt_port, custom_mqtt_port.getValue());
-    strcpy(blynk_token, custom_blynk_token.getValue());
-
-    //save the custom parameters to FS
-    if (shouldSaveConfig) {
-      Serial.println("saving config");
-      DynamicJsonDocument jsonBuffer(1024);
-      //JsonObject& json = jsonBuffer.createObject();
-      //jsonBuffer[""]
-
-/*
-      jsonBuffer["ssid_id"] = ssid_id;
-      jsonBuffer["ssid_psw"] = ssid_psw;*/
-      jsonBuffer["static_ip"] = static_ip;
-      jsonBuffer["static_gateway"] = static_gateway;
-      jsonBuffer["subnet"] = subnet;
-
-      jsonBuffer["mqtt_server"] = mqtt_server;
-      jsonBuffer["mqtt_port"] = mqtt_port;
-      jsonBuffer["blynk_token"] = blynk_token;
-
-      File configFile = SPIFFS.open("/config.json", "w");
-      if (!configFile) {
-        Serial.println("failed to open config file for writing");
-      }
-
-      serializeJson(jsonBuffer, Serial);
-      serializeJson(jsonBuffer, configFile);
-      //json.printTo(Serial);
-      //json.printTo(configFile);
-      
-      configFile.close();
-      //end save
-    }
-
-    Serial.println("local ip");
-    Serial.println(WiFi.localIP());
-
-
-   
-
-
 }
-
-
-void getAndSendTemperatureAndHumidityData(){
-  Serial.println("Collecting temperature data.");
-
-  // Reading temperature or humidity takes about 250 milliseconds!
-  float h = dht.readHumidity();
-  // Read temperature as Celsius (the default)
-  float t = dht.readTemperature();
-  
-
-  // Check if any reads failed and exit early (to try again).
-  if (isnan(h) || isnan(t)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return;
-  }
-
-  Serial.print("Humidity: ");
-  Serial.print(h);
-  Serial.print(" %\t");
-  Serial.print("Temperature: ");
-  Serial.print(t);
-  Serial.print(" *C ");
-
-  String temperature = String(t);
-  String humidity = String(h);
-
-
-  // Just debug messages
-  Serial.print( "Sending temperature and humidity : [" );
-  Serial.print( temperature ); Serial.print( "," );
-  Serial.print( humidity );
-  Serial.print( "]   -> " );
-
-  // Prepare a JSON payload string
-  String payload = "{";
-  payload += "\"temperature\":"; payload += temperature; payload += ",";
-  payload += "\"humidity\":"; payload += humidity;
-  payload += "}";
-
-  // Send payload of the JSON
-  char attributes[100];
-  payload.toCharArray( attributes, 100 );
-  client.publish( "dht22/state", attributes );
-  Serial.println( attributes );
-
-
-
-  temp_str = String(t); //converting temp (the float variable above) to a string 
-  temp_str.toCharArray(temp, temp_str.length() + 1); //packaging up the data to publish to mqtt whoa...
-
-  hum_str = String(h); //converting Humidity (the float variable above) to a string
-  hum_str.toCharArray(hum, hum_str.length() + 1); //packaging up the data to publish to mqtt whoa...
-
-
-  
-    client.publish("dht22/temperature", temp); //money shot
-    client.publish("dht22/humidity", hum);
-}
-
-
-void loop() {
-  // put your main code here, to run repeatedly:
-  
-  //drd.loop();
-
-  // Call the double reset detector loop method every so often,
-  // so that it can recognise when the timeout expires.
-  // You can also call drd.stop() when you wish to no longer
-  // consider the next reset as a double reset.
-  drd->loop();
-
-  if (!client.connected()) {
-    reconnect();
-  }
-  client.loop();
-
-
-  long now = millis();
-  if (now - lastMsg > 2000) {  //This is the 2 seconds delay to send message every 2 seconds.
-    lastMsg = now;
-    ++value;
-    snprintf (msg, 50, "hello world #%ld", value);
-    Serial.print("Publish message: ");
-    Serial.println(msg);
-    //client.publish("outTopic", msg);
-    //client.publish("casa/despacho/temperatura", msg);
-    getAndSendTemperatureAndHumidityData();
-  }
-
-
-  /*delay(2000);
-  //Read data and store it to variables hum and temp
-  hum = dht.readHumidity();
-  temp= dht.readTemperature();
-  //Print temp and humidity values to serial monitor
-  Serial.print("Humidity: ");
-  Serial.print(hum);
-  Serial.print(" %, Temp: ");
-  Serial.print(temp);
-  Serial.println(" Celsius");
-  //delay(10000); //Delay 2 sec.
-*/
-}
-
+    
