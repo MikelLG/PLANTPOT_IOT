@@ -1,0 +1,61 @@
+2022-10-17 17:02:25.091 ++ C:\Users\Mikel\Desktop\ScpServer\bin\ScpServer.exe  1.2.0.160
+2022-10-17 17:02:25.094 ++ C:\Users\Mikel\Desktop\ScpServer\bin\ScpControl.dll 1.2.0.160
+2022-10-17 17:02:25.144 ++ Microsoft Windows 10 Pro (6.2.9200.0 AMD64)
+2022-10-17 17:02:25.146 -- Bus Open   : Offset 0
+2022-10-17 17:02:25.149 -- Bus Open   : Path \\?\ROOT#SYSTEM#0001#{F679F562-3164-42CE-A4DB-E7DDBE723909}
+2022-10-17 17:02:25.177 ## Mapper.Initialize() - Profiles [5] Active [Default] Mappings [0]
+2022-10-17 17:02:25.196 -- Controller : UDP_Worker_Thread Starting
+2022-10-17 17:02:33.109 ++ Notify [Removal] [{2F87C733-60E0-4355-8515-95D6978418B2}] [\\?\USB#VID_054C&PID_0268#6&304B88C6&0&2#{2F87C733-60E0-4355-8515-95D6978418B2}]
+2022-10-17 17:02:33.115 -- Device Removal [00:00:00:00:00:00]
+2022-10-17 17:02:45.851 ## Mapper.Shutdown()
+2022-10-17 17:02:45.851 -- Controller : UDP_Worker_Thread Exiting
+2022-10-17 17:02:47.858 ++ C:\Users\Mikel\Desktop\ScpServer\bin\ScpControl.dll 1.2.0.160
+2022-10-17 17:02:47.892 ++ Microsoft Windows 10 Pro (6.2.9200.0 AMD64)
+2022-10-17 17:02:47.893 ## Mapper.Initialize() - Profiles [5] Active [Default] Mappings [0]
+2022-10-17 17:02:47.908 -- Controller : UDP_Worker_Thread Starting
+2022-10-17 17:02:55.217 ## Mapper.Shutdown()
+2022-10-17 17:03:09.925 ++ C:\Users\Mikel\Desktop\ScpServer\bin\ScpServer.exe  1.2.0.160
+2022-10-17 17:03:09.928 ++ C:\Users\Mikel\Desktop\ScpServer\bin\ScpControl.dll 1.2.0.160
+2022-10-17 17:03:09.972 ++ Microsoft Windows 10 Pro (6.2.9200.0 AMD64)
+2022-10-17 17:03:09.974 -- Bus Open   : Offset 0
+2022-10-17 17:03:09.976 -- Bus Open   : Path \\?\ROOT#SYSTEM#0001#{F679F562-3164-42CE-A4DB-E7DDBE723909}
+2022-10-17 17:03:09.995 ## Mapper.Initialize() - Profiles [5] Active [Default] Mappings [0]
+2022-10-17 17:03:10.004 -- Controller : UDP_Worker_Thread Starting
+2022-10-17 17:03:11.610 ## Mapper.Shutdown()
+2022-10-17 17:03:11.610 -- Controller : UDP_Worker_Thread Exiting
+2022-10-17 17:05:28.163 ++ C:\Users\Mikel\Desktop\ScpServer\bin\ScpServer.exe  1.2.0.160
+2022-10-17 17:05:28.166 ++ C:\Users\Mikel\Desktop\ScpServer\bin\ScpControl.dll 1.2.0.160
+2022-10-17 17:05:28.217 ++ Microsoft Windows 10 Pro (6.2.9200.0 AMD64)
+2022-10-17 17:05:28.219 -- Bus Open   : Offset 0
+2022-10-17 17:05:28.223 -- Bus Open   : Path \\?\ROOT#SYSTEM#0001#{F679F562-3164-42CE-A4DB-E7DDBE723909}
+2022-10-17 17:05:28.242 ## Mapper.Initialize() - Profiles [5] Active [Default] Mappings [0]
+2022-10-17 17:05:28.255 -- Bus Plugin : Serial 1
+2022-10-17 17:05:28.256 ++ Plugin Port #1 for [06:D5:78:76:63:25]
+2022-10-17 17:05:28.262 -- Started Device Instance [USB\VID_054C&PID_0268\6&304B88C6&0&2] Local [06:D5:78:76:63:25] Remote [4C:D5:77:85:62:30]
+2022-10-17 17:05:28.260 -- USB Device : HID_Worker_Thread Starting
+2022-10-17 17:05:28.271 -- Controller : UDP_Worker_Thread Starting
+2022-10-17 17:07:11.751 ++ Notify [Removal] [{E2824A09-DBAA-4407-85CA-C8E8FF5F6FFA}] [\\?\USB#VID_054C&PID_0268#6&304B88C6&0&2#{E2824A09-DBAA-4407-85CA-C8E8FF5F6FFA}]
+2022-10-17 17:07:11.753 -- Device Removal [06:D5:78:76:63:25]
+2022-10-17 17:07:11.755 -- USB Device : HID_Worker_Thread Exiting
+2022-10-17 17:07:16.344 ++ Notify [Arrival] [{E2824A09-DBAA-4407-85CA-C8E8FF5F6FFA}] [\\?\USB#VID_054C&PID_0268#6&304B88C6&0&2#{E2824A09-DBAA-4407-85CA-C8E8FF5F6FFA}]
+2022-10-17 17:07:16.348 -- DS3 Arrival Event
+2022-10-17 17:07:16.360 -- Device Arrival [07:61:5D:8A:63:25]
+2022-10-17 17:07:16.361 -- Bus Plugin : Serial 2
+2022-10-17 17:07:16.361 ++ Plugin Port #2 for [07:61:5D:8A:63:25]
+2022-10-17 17:07:16.372 -- Started Device Instance [USB\VID_054C&PID_0268\6&304B88C6&0&2] Local [07:61:5D:8A:63:25] Remote [A4:4B:D5:B7:D7:8E]
+2022-10-17 17:07:16.366 -- USB Device : HID_Worker_Thread Starting
+2022-10-17 17:13:53.442 ++ Notify [Removal] [{E2824A09-DBAA-4407-85CA-C8E8FF5F6FFA}] [\\?\USB#VID_054C&PID_0268#6&304B88C6&0&2#{E2824A09-DBAA-4407-85CA-C8E8FF5F6FFA}]
+2022-10-17 17:13:53.460 -- Device Removal [07:61:5D:8A:63:25]
+2022-10-17 17:13:53.470 -- USB Device : HID_Worker_Thread Exiting
+2022-10-17 17:13:54.016 ++ Notify [Arrival] [{E2824A09-DBAA-4407-85CA-C8E8FF5F6FFA}] [\\?\USB#VID_054C&PID_0268#6&304B88C6&0&2#{E2824A09-DBAA-4407-85CA-C8E8FF5F6FFA}]
+2022-10-17 17:13:54.035 -- DS3 Arrival Event
+2022-10-17 17:13:54.053 -- Device Arrival [07:61:5D:8A:63:25]
+2022-10-17 17:13:54.060 ++ Plugin Port #2 for [07:61:5D:8A:63:25]
+2022-10-17 17:13:54.065 -- Started Device Instance [USB\VID_054C&PID_0268\6&304B88C6&0&2] Local [07:61:5D:8A:63:25] Remote [A4:4B:D5:B7:D7:8E]
+2022-10-17 17:13:54.063 -- USB Device : HID_Worker_Thread Starting
+2022-10-17 17:47:46.242 ++ Notify [Removal] [{E2824A09-DBAA-4407-85CA-C8E8FF5F6FFA}] [\\?\USB#VID_054C&PID_0268#6&304B88C6&0&2#{E2824A09-DBAA-4407-85CA-C8E8FF5F6FFA}]
+2022-10-17 17:47:46.250 -- Device Removal [07:61:5D:8A:63:25]
+2022-10-17 17:47:46.251 -- USB Device : HID_Worker_Thread Exiting
+2022-10-17 17:48:08.592 ## Mapper.Shutdown()
+2022-10-17 17:48:08.599 -- Bus Unplug : Serial 1
+2022-10-17 17:48:08.606 -- Bus Unplug : Serial 2

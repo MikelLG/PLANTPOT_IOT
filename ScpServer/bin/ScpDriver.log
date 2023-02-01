@@ -1,0 +1,63 @@
+SCP Driver Installer 1.2.0.160 [17/10/2022 17:01:59]
+
+Detected - Microsoft Windows 10 Pro (6.2.9200.0 AMD64)
+Selected DEFAULT configuration.
+
+INFO    - ENTER:  DriverPackageInstallW
+INFO    - Looking for Model Section [SCProductions.NTamd64]...
+INFO    - RETURN: DriverPackageInstallW  (0x103)
+INFO    - ENTER:  DriverPackageInstallW
+INFO    - Looking for Model Section [SCProductions.NTamd64]...
+INFO    - No matching devices found in INF "C:\Users\Mikel\Desktop\ScpServer\bin\System\BthWinUsb.inf" on the Machine.
+INFO    - RETURN: DriverPackageInstallW  (0xE000020B)
+INFO    - ENTER:  DriverPackageInstallW
+INFO    - Looking for Model Section [SCProductions.NTamd64]...
+INFO    - RETURN: DriverPackageInstallW  (0x103)
+
+Install Succeeded.
+
+-- Install Summary --
+
+
+
+SCP Driver Installer 1.2.0.160 [17/10/2022 17:04:41]
+
+Detected - Microsoft Windows 10 Pro (6.2.9200.0 AMD64)
+Selected DEFAULT configuration.
+
+INFO    - ENTER:  DriverPackageInstallW
+INFO    - Looking for Model Section [SCProductions.NTamd64]...
+INFO    - Installing INF file 'C:\Users\Mikel\Desktop\ScpServer\bin\System\ScpVBus.inf' (Plug and Play).
+INFO    - Looking for Model Section [SCProductions.NTamd64]...
+INFO    - Installing devices with Id "root\ScpVBus" using INF "C:\Windows\System32\DriverStore\FileRepository\scpvbus.inf_amd64_21ca245c0e23d7a5\scpvbus.inf".
+INFO    - Will force install because driver is not better and force flag is set.
+INFO    - ENTER UpdateDriverForPlugAndPlayDevices...
+SUCCESS - RETURN UpdateDriverForPlugAndPlayDevices.
+INFO    - Installation was successful.
+SUCCESS - Install completed
+INFO    - RETURN: DriverPackageInstallW  (0x0)
+INFO    - ENTER:  DriverPackageInstallW
+INFO    - Looking for Model Section [SCProductions.NTamd64]...
+INFO    - No matching devices found in INF "C:\Users\Mikel\Desktop\ScpServer\bin\System\BthWinUsb.inf" on the Machine.
+INFO    - RETURN: DriverPackageInstallW  (0xE000020B)
+INFO    - ENTER:  DriverPackageInstallW
+INFO    - Looking for Model Section [SCProductions.NTamd64]...
+INFO    - Installing INF file 'C:\Users\Mikel\Desktop\ScpServer\bin\System\Ds3WinUsb.inf' (Plug and Play).
+INFO    - Looking for Model Section [SCProductions.NTamd64]...
+INFO    - Installing devices with Id "USB\VID_054C&PID_0268&REV_0100" using INF "C:\Windows\System32\DriverStore\FileRepository\ds3winusb.inf_amd64_15691982ca5c21ae\Ds3WinUsb.inf".
+INFO    - Will force install because driver is not better and force flag is set.
+INFO    - ENTER UpdateDriverForPlugAndPlayDevices...
+SUCCESS - RETURN UpdateDriverForPlugAndPlayDevices.
+INFO    - Installation was successful.
+INFO    - Marked Phantom Device with Hardware/Compatible Id 'USB\VID_054C&PID_0268&REV_0100' for reinstall on next plug-in.
+SUCCESS - Install completed
+INFO    - RETURN: DriverPackageInstallW  (0x0)
+
+Install Succeeded. [Reboot Required]
+
+-- Install Summary --
+Bus Driver
+DS3 USB Driver
+
+
+
