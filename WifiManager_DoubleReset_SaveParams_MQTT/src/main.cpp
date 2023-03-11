@@ -21,6 +21,11 @@
 
 #include <DNSServer.h>
 
+//Seed SHT35 Temperature and Humidity Sensor Library.
+#include "Seeed_SHT35.h"
+
+
+
 // SPI Flash Syetem Library
 #include <SPIFFS.h>
 
@@ -63,7 +68,23 @@ DoubleResetDetector* drd;
 
 /////////////////////////------------------------------------------DOUBLE RESET DETECTION ^^---------------------------
 
+/////////////////////_----------------------------------SHT35-----------------
+/*SAMD core*/
+#ifdef ARDUINO_SAMD_VARIANT_COMPLIANCE
+  #define SDAPIN  20
+  #define SCLPIN  21
+  #define RSTPIN  7
+  #define SERIAL SerialUSB
+#else
+  #define SDAPIN  A4
+  #define SCLPIN  A5
+  #define RSTPIN  2
+  #define SERIAL Serial
+#endif
+ 
+SHT35 sensor(SCLPIN);
 
+///////////////////////////_----------------------------------------------------------
 
 #include <PubSubClient.h>   //MQTT COMUNICATION
 
@@ -274,7 +295,13 @@ void setup() {
   Serial.println("Booting..");
 
   pinMode(LED_BUILTIN,OUTPUT);
-  
+
+  //DHT35
+  if(sensor.init())
+  {
+    SERIAL.println("sensor init failed!!!");
+  }
+  ///
   drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
 
   
@@ -493,6 +520,31 @@ void getAndSendTemperatureAndHumidityData(){
 void loop() {
   // put your main code here, to run repeatedly:
   
+  //SHT35
+  u16 value=0;
+  u8 data[6]={0};
+  float temp,hum;
+  if(NO_ERROR!=sensor.read_meas_data_single_shot(HIGH_REP_WITH_STRCH,&temp,&hum))
+  {
+    SERIAL.println("read temp failed!!");
+    SERIAL.println("   ");
+    SERIAL.println("   ");
+    SERIAL.println("   ");
+  }
+  else
+  {
+    SERIAL.println("result======>");
+    SERIAL.print("temperature =");
+    SERIAL.println(temp);
+
+    SERIAL.print("humidity =");
+    SERIAL.println(hum);
+
+    SERIAL.println("   ");
+    SERIAL.println("   ");
+    SERIAL.println("   ");
+  }
+  //
 
   // Call the double reset detector loop method every so often,
   // so that it can recognise when the timeout expires.
@@ -509,13 +561,6 @@ void loop() {
   long now = millis();
   if (now - lastMsg > 2000) {  //This is the 2 seconds delay to send message every 2 seconds.
     lastMsg = now;
-    //++value;
-    //snprintf (msg, 50, "hello world #%ld", value);
-    //Serial.print("Publish message: ");
-    //Serial.println(msg);
-
-    //client.publish("outTopic", msg);
-    //client.publish("casa/despacho/temperatura", msg);
     getAndSendTemperatureAndHumidityData();
   }
 
