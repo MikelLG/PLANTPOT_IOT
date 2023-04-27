@@ -12,7 +12,7 @@
 Adafruit_BME280 bme;
 
 //          SHT 35 CODE
-#include "Seeed_SHT35.h"
+//#include "Seeed_SHT35.h"
 
 
 /*SAMD core*/
@@ -28,17 +28,13 @@ Adafruit_BME280 bme;
    // #define SERIAL Serial
 #endif
 
-SHT35 sensor(SCLPIN);
+//SHT35 sensor(SCLPIN);
 
 
 void setup() {
 	Serial.begin(115200);
 
-  Serial.println("serial start!!");
-  if (sensor.init()) {
-      Serial.println("sensor init failed!!");
-  }
-  delay(1000);
+
 
 
 	if (!bme.begin(0x76)) {
@@ -49,26 +45,19 @@ void setup() {
 
 void loop() {
 
-  u16 value = 0;
-  u8 data[6] = {0};
+  
   float temp, hum;
-  if (NO_ERROR != sensor.read_meas_data_single_shot(HIGH_REP_WITH_STRCH, &temp, &hum)) {
-      Serial.println("read temp failed!!");
-      Serial.println("   ");
-      Serial.println("   ");
-      Serial.println("   ");
-  } else {
+  Serial.print(bme.readTemperature());
+  Serial.print(",");
+  Serial.print(temp);
+  Serial.print(",");
+  Serial.print(bme.readHumidity());
+  Serial.print(",");
+  Serial.println(hum);
+     
+  
 
-      Serial.print(bme.readTemperature());
-      Serial.print(",");
-      Serial.print(temp);
-      Serial.print(",");
-      Serial.print(bme.readHumidity());
-      Serial.print(",");
-      Serial.println(hum);
-  }
-
-  delay(1000);
+  delay(100);
 
 
 

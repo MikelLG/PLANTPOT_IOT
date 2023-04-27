@@ -8,13 +8,16 @@
 */
 
 int ledPin = 13;                // LED
-int pirPin = 15;                 // PIR Out pin
+int pirPin = 14;                 // PIR Out pin
 int pirStat = 0;                // PIR status
+
+
 void setup() {
   pinMode(ledPin, OUTPUT);
   pinMode(pirPin, INPUT);
   Serial.begin(115200);
 }
+
 void loop() {
   pirStat = digitalRead(pirPin);
   if (pirStat == HIGH) {

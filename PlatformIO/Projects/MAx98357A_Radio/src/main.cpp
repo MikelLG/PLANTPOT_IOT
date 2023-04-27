@@ -13,9 +13,11 @@
 
 Audio audio;
 
-String ssid = "Marquesa38";
+//String ssid = "Marquesa38";
+String ssid = "LIGMA";
 
-String password = "C0m0M0l4Est4C4sit4";
+//String password = "C0m0M0l4Est4C4sit4";
+String password = "BALLS010";
 
 void setup() {
 
@@ -33,7 +35,7 @@ void setup() {
 
   audio.setVolume(100);
 
-  audio.connecttohost("http://vis.media-ice.musicradio.com/CapitalMP3");
+audio.connecttohost("https://radiomeuh2.ice.infomaniak.ch/radiomeuh2-128.mp3");
 
 }
 
